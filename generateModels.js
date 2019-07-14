@@ -79,11 +79,13 @@ ${getImportStatements(ob.properties)}
 export default class ${ob.name} extends RealmModel{
         constructor(){
             super();
-            this.presave = ${ob.name}.presave;
-            this.postsave = ${ob.name}.postsave;
+            this.presave = ${ob.name}.preSave;
+            this.postsave = ${ob.name}.postSave;
             ${getProps(ob.properties)}
         }
-        static preSave = (obj = new ${ob.name}())=>{}
+        static preSave = (obj = new ${ob.name}(),next)=>{
+            next();
+        }
         static postSave = (obj = new ${ob.name}())=>{}
         static ModelName = '${ob.name}';
         static parseJsonObject(jsonObject){
@@ -119,8 +121,9 @@ export default class ${ob.name} extends RealmModel{
             return this.parseJsonObject(found);
         }
         save(){
-            this.presave(this);
-            super.save(${ob.name}.ModelName);
+            this.presave(this,()=>{
+                super.save(${ob.name}.ModelName);
+            });
             this.postsave(this);
         }
     }
