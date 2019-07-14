@@ -1,6 +1,7 @@
 let schemas = require('./Schema');
 let fs = require('fs');
 let includeTypeInArray = true;
+const useES6 = true;
 if (!fs.existsSync(__dirname + '/../Models')) {
     fs.mkdirSync(__dirname + '/../Models');
 }
@@ -55,26 +56,27 @@ const getImportStatements = (ob) => {
     ]
     if (ob.constructor == Object) {
         for (let o in ob) {
-            let type ;
-            if(ob[o].constructor == String){
-            type = ob[o].replace('[]','');
-            }else if(ob[o].constructor == Object){
-                type = ob[o]['type'].replace('[]','');
+            let type;
+            if (ob[o].constructor == String) {
+                type = ob[o].replace('[]', '');
+            } else if (ob[o].constructor == Object) {
+                type = ob[o]['type'].replace('[]', '');
             }
-            if(!nonImports.includes(type) && !importsReq.includes(type)){
+            if (!nonImports.includes(type) && !importsReq.includes(type)) {
                 importsReq.push(type);
             }
         }
     }
-    for(let i = 0; i < importsReq.length; i++){
+    for (let i = 0; i < importsReq.length; i++) {
         importStatement += `import ${importsReq[i]} from './${importsReq[i]}';\n`
     }
     return importStatement;
 }
 const indexArray = [];
-schemas.forEach((ob) => {
-    let data =
-        `import RealmModel from '../Realm/Model';
+if (useES6) {
+    schemas.forEach((ob) => {
+        let data =
+            `import RealmModel from '../Realm/Model';
 ${getImportStatements(ob.properties)}        
 export default class ${ob.name} extends RealmModel{
         constructor(){
@@ -128,12 +130,71 @@ export default class ${ob.name} extends RealmModel{
         }
     }
     `
-    fs.writeFileSync(__dirname + `/../Models/${ob.name}.js`, data);
-    indexArray.push(ob.name);
-})
+        fs.writeFileSync(__dirname + `/../Models/${ob.name}.js`, data);
+        indexArray.push(ob.name);
+    })
+} else {
+    schemas.forEach((ob) => {
+        let data = `const RealmModel = require('./Model');
+        ${getImportStatements(ob.properties)}
+        function ${ob.name}(){
+            RealmModel.call(this);
+            this.presave = ${ob.name}.preSave;
+            this.postsave = ${ob.name}.postSave;
+            ${getProps(ob.properties)}
+        }
+        ${ob.name}.preSave = function(obj = new ${ob.name}(),next){
+            next();
+        }
+        ${ob.name}.postSave = function(obj = new ${ob.name}()){}
+        ${ob.name}.parseJsonObject = function(jsonObject){
+            let ob = new ${ob.name}();
+            if(jsonObject.constructor == String){
+                ob = JSON.parse(jsonObject);
+            }else{
+                ob = jsonObject;
+            }
+            return ob;
+        }
+        ${ob.name}.getAll = function(){
+            let found = super.all(${ob.name}.ModelName);
+            return found.map((ob)=>{
+                return this.parseJsonObject(ob);
+            })
+        }
+        ${ob.name}.find = function(query){
+            let found = super.find(${ob.name}.ModelName,query);
+            return found.map((ob)=>{
+                return this.parseJsonObject(ob);
+            })
+        }
+        ${ob.name}.findOne = function(query){
+            let found = super.findOne(${ob.name}.ModelName,query);
+            return this.parseJsonObject(found);
+        }
+        ${ob.name}.findObjectById = function(objectId){
+            let found = super.findByObjectId(${ob.name}.ModelName,objectId);
+            return this.parseJsonObject(found);
+        }
+        ${ob.name}.prototype.save = function(){
+            this.presave(this,()=>{
+                super.save(${ob.name}.ModelName);
+            });
+            this.postsave(this);
+        }
+        
+        module.exports = ${ob.name}`;
+        fs.writeFileSync(__dirname + `/../Models/${ob.name}.js`, data);
+        indexArray.push(ob.name);
+    })
+}
 let index = '';
-indexArray.forEach((value)=>{
+indexArray.forEach((value) => {
+    if(useES6){
     index += `import ${value} from './${value}';\nexport {${value}}\n`;
+    }else{
+        index += `const ${value} = require('./${value}');\nmodule.export = ${value}`
+    }
 })
-fs.writeFileSync(__dirname + '/../Models/index.js',index);
-console.log('\x1b[32m','Models Generated at ' + __dirname + '/../Models');
+fs.writeFileSync(__dirname + '/../Models/index.js', index);
+console.log('\x1b[32m', 'Models Generated at ' + __dirname + '/../Models');
