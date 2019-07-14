@@ -79,12 +79,12 @@ ${getImportStatements(ob.properties)}
 export default class ${ob.name} extends RealmModel{
         constructor(){
             super();
-            this.presave = RealmModel.presave;
-            this.postsave = RealmModel.postsave;
+            this.presave = ${ob.name}.presave;
+            this.postsave = ${ob.name}.postsave;
             ${getProps(ob.properties)}
         }
-        static preSave = (${ob.name} = new ${ob.name}())=>{}
-        static postSave = (${ob.name} = new ${ob.name}())=>{}
+        static preSave = (obj = new ${ob.name}())=>{}
+        static postSave = (obj = new ${ob.name}())=>{}
         static ModelName = '${ob.name}';
         static parseJsonObject(jsonObject){
             let ob = new ${ob.name}();
