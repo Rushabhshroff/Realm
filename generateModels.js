@@ -187,7 +187,7 @@ export default class ${ob.name} extends RealmModel{
             this.postsave(this);
         }
         
-        module.exports = ${ob.name}`;
+        module.exports.${ob.name} = ${ob.name}`;
         fs.writeFileSync(__dirname + `/../Models/${ob.name}.js`, data);
         indexArray.push(ob.name);
     })
