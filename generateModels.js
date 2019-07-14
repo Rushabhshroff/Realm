@@ -80,7 +80,7 @@ const indexArray = [];
 if (useES6) {
     schemas.forEach((ob) => {
         let data =
-            `import RealmModel from '../Realm/Model';
+            `import RealmModel from '../Realm/ModelES6';
 ${getImportStatements(ob.properties)}        
 export default class ${ob.name} extends RealmModel{
         constructor(){
