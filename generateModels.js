@@ -68,7 +68,11 @@ const getImportStatements = (ob) => {
         }
     }
     for (let i = 0; i < importsReq.length; i++) {
+        if(useES6){
         importStatement += `import ${importsReq[i]} from './${importsReq[i]}';\n`
+        }else{
+            importStatement += `const ${importsReq[i]} = require('./${importsReq[i]})\n`;
+        }
     }
     return importStatement;
 }
