@@ -1,5 +1,6 @@
 let schemas = require('./Schema');
 let fs = require('fs');
+let rewrite = false;
 let includeTypeInArray = true;
 const useES6 = true;
 if (!fs.existsSync(__dirname + '/../Models')) {
@@ -68,9 +69,9 @@ const getImportStatements = (ob) => {
         }
     }
     for (let i = 0; i < importsReq.length; i++) {
-        if(useES6){
-        importStatement += `import ${importsReq[i]} from './${importsReq[i]}';\n`
-        }else{
+        if (useES6) {
+            importStatement += `import ${importsReq[i]} from './${importsReq[i]}';\n`
+        } else {
             importStatement += `const ${importsReq[i]} = require('./${importsReq[i]})\n`;
         }
     }
@@ -134,7 +135,13 @@ export default class ${ob.name} extends RealmModel{
         }
     }
     `
-        fs.writeFileSync(__dirname + `/../Models/${ob.name}.js`, data);
+        if (fs.existsSync(__dirname + `/../Models/${ob.name}.js`)) {
+            if (rewrite) {
+                fs.writeFileSync(__dirname + `/../Models/${ob.name}.js`, data);
+            }
+        } else {
+            fs.writeFileSync(__dirname + `/../Models/${ob.name}.js`, data);
+        }
         indexArray.push(ob.name);
     })
 } else {
@@ -188,15 +195,21 @@ export default class ${ob.name} extends RealmModel{
         }
         
         module.exports = ${ob.name}`;
-        fs.writeFileSync(__dirname + `/../Models/${ob.name}.js`, data);
+        if (fs.existsSync(__dirname + `/../Models/${ob.name}.js`)) {
+            if (rewrite) {
+                fs.writeFileSync(__dirname + `/../Models/${ob.name}.js`, data);
+            }
+        } else {
+            fs.writeFileSync(__dirname + `/../Models/${ob.name}.js`, data);
+        }
         indexArray.push(ob.name);
     })
 }
 let index = '';
 indexArray.forEach((value) => {
-    if(useES6){
-    index += `import ${value} from './${value}';\nexport {${value}}\n`;
-    }else{
+    if (useES6) {
+        index += `import ${value} from './${value}';\nexport {${value}}\n`;
+    } else {
         index += `const ${value} = require('./${value}');\nmodule.exports.${value} = ${value}`
     }
 })
