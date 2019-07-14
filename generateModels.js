@@ -139,7 +139,7 @@ export default class ${ob.name} extends RealmModel{
     })
 } else {
     schemas.forEach((ob) => {
-        let data = `const RealmModel = require('./Model');
+        let data = `const RealmModel = require('../Realm/Model');
         ${getImportStatements(ob.properties)}
         function ${ob.name}(){
             RealmModel.call(this);
@@ -161,28 +161,28 @@ export default class ${ob.name} extends RealmModel{
             return ob;
         }
         ${ob.name}.getAll = function(){
-            let found = super.all(${ob.name}.ModelName);
+            let found = RealmModel.all(${ob.name}.name);
             return found.map((ob)=>{
                 return this.parseJsonObject(ob);
             })
         }
         ${ob.name}.find = function(query){
-            let found = super.find(${ob.name}.ModelName,query);
+            let found = RealmModel.find(${ob.name}.name,query);
             return found.map((ob)=>{
                 return this.parseJsonObject(ob);
             })
         }
         ${ob.name}.findOne = function(query){
-            let found = super.findOne(${ob.name}.ModelName,query);
+            let found = RealmModel.findOne(${ob.name}.name,query);
             return this.parseJsonObject(found);
         }
         ${ob.name}.findObjectById = function(objectId){
-            let found = super.findByObjectId(${ob.name}.ModelName,objectId);
+            let found = RealmModel.findByObjectId(${ob.name}.name,objectId);
             return this.parseJsonObject(found);
         }
         ${ob.name}.prototype.save = function(){
             this.presave(this,()=>{
-                super.save(${ob.name}.ModelName);
+                RealmModel.prototype.save.call(this,${ob.name}.name);
             });
             this.postsave(this);
         }
