@@ -187,7 +187,7 @@ export default class ${ob.name} extends RealmModel{
             this.postsave(this);
         }
         
-        module.exports.${ob.name} = ${ob.name}`;
+        module.exports = ${ob.name}`;
         fs.writeFileSync(__dirname + `/../Models/${ob.name}.js`, data);
         indexArray.push(ob.name);
     })
@@ -197,7 +197,7 @@ indexArray.forEach((value) => {
     if(useES6){
     index += `import ${value} from './${value}';\nexport {${value}}\n`;
     }else{
-        index += `const ${value} = require('./${value}');\nmodule.export = ${value}`
+        index += `const ${value} = require('./${value}');\nmodule.exports.${value} = ${value}`
     }
 })
 fs.writeFileSync(__dirname + '/../Models/index.js', index);
