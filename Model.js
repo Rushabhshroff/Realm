@@ -41,7 +41,7 @@ RealmModel.findOne = function (ModelName, query) {
 RealmModel.findByObjectId = function (ModelName, objectId) {
     return Realm.Instance.objectForPrimaryKey(ModelName, objectId);
 }
-RealmModel.save = function (ModelName) {
+RealmModel.prototype.save = function (ModelName) {
     Realm.Instance.write(() => {
         Realm.Instance.create(ModelName, this, true);
     })

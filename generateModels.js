@@ -1,8 +1,8 @@
 let schemas = require('./Schema');
 let fs = require('fs');
 let rewrite = false;
-let includeTypeInArray = true;
-const useES6 = true;
+let includeTypeInArray = false;
+const useES6 = false;
 if (!fs.existsSync(__dirname + '/../Models')) {
     fs.mkdirSync(__dirname + '/../Models');
 }
@@ -160,10 +160,14 @@ export default class ${ob.name} extends RealmModel{
         ${ob.name}.postSave = function(obj = new ${ob.name}()){}
         ${ob.name}.parseJsonObject = function(jsonObject){
             let ob = new ${ob.name}();
-            if(jsonObject.constructor == String){
-                ob = JSON.parse(jsonObject);
+            let descriptor = Object();
+            for(let j in jsonObject){
+                descriptor[j] = {value:jsonObject[j],writable:true}
+            }
+            if(jsonObject && jsonObject.constructor == String){
+                Object.defineProperties(ob,descriptor);
             }else{
-                ob = jsonObject;
+                Object.defineProperties(ob,descriptor);
             }
             return ob;
         }
@@ -181,11 +185,19 @@ export default class ${ob.name} extends RealmModel{
         }
         ${ob.name}.findOne = function(query){
             let found = RealmModel.findOne(${ob.name}.name,query);
+            if(found){
             return this.parseJsonObject(found);
+            }else{
+                return undefined;
+            }
         }
         ${ob.name}.findObjectById = function(objectId){
             let found = RealmModel.findByObjectId(${ob.name}.name,objectId);
+            if(found){
             return this.parseJsonObject(found);
+            }else{
+                return undefined;
+            }
         }
         ${ob.name}.prototype.save = function(){
             this.presave(this,()=>{
