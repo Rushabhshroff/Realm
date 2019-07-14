@@ -83,10 +83,10 @@ export default class ${ob.name} extends RealmModel{
             this.postsave = ${ob.name}.postSave;
             ${getProps(ob.properties)}
         }
-        static preSave = (obj = new ${ob.name}(),next)=>{
+        static preSave(obj = new ${ob.name}(),next){
             next();
         }
-        static postSave = (obj = new ${ob.name}())=>{}
+        static postSave(obj = new ${ob.name}()){}
         static ModelName = '${ob.name}';
         static parseJsonObject(jsonObject){
             let ob = new ${ob.name}();
